@@ -8,6 +8,7 @@ import styles from './feed.module.css';
 
 export const FeedUI = memo(function FeedUI({
   orders,
+  error,
   handleGetFeeds,
 }: FeedUIProps): React.JSX.Element {
   return (
@@ -16,6 +17,9 @@ export const FeedUI = memo(function FeedUI({
         <h1 className="text text_type_main-large">Лента заказов</h1>
         <RefreshButton text="Обновить" onClick={handleGetFeeds} extraClass={'ml-30'} />
       </div>
+      {error && (
+        <p className="text text_type_main-default text_color_error mb-4">{error}</p>
+      )}
       <div className={styles.main}>
         <div className={styles.columnOrders}>
           <OrdersList orders={orders} />
