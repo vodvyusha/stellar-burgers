@@ -1,25 +1,39 @@
 import { Preloader, OrderInfoUI } from '@ui';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
+import { useParams } from 'react-router-dom';
+
+import { useDispatch, useSelector } from '@services/store';
+import { getOrderByNumber } from '@slices/orderInfoSlice';
 
 import type { TIngredient } from '@utils-types';
 
 export const OrderInfo = (): React.JSX.Element => {
-  /** TODO: взять переменные orderData и ingredients из стора */
-  const orderData = {
-    createdAt: '',
-    ingredients: [],
-    _id: '',
-    status: '',
-    name: '',
-    updatedAt: 'string',
-    number: 0,
-  };
+  const dispatch = useDispatch();
 
-  const ingredients: TIngredient[] = [];
+  const { number } = useParams();
 
-  /* Готовим данные для отображения */
+  const orderData = useSelector((state) => state.orderInfo.order);
+
+  const isLoading = useSelector((state) => state.orderInfo.isLoading);
+
+  const error = useSelector((state) => state.orderInfo.error);
+
+  const ingredients = useSelector((state) => state.ingredients.ingredients);
+
+  const orderNumber = Number(number);
+
+  const isInvalidNumber = !number || Number.isNaN(orderNumber);
+
+  useEffect(() => {
+    if (!isInvalidNumber) {
+      dispatch(getOrderByNumber(orderNumber));
+    }
+  }, [dispatch, orderNumber, isInvalidNumber]);
+
   const orderInfo = useMemo(() => {
-    if (!orderData || !ingredients.length) return null;
+    if (!orderData || !ingredients.length) {
+      return null;
+    }
 
     const date = new Date(orderData.createdAt);
 
@@ -29,6 +43,7 @@ export const OrderInfo = (): React.JSX.Element => {
       (acc: TIngredientsWithCount, item) => {
         if (!acc[item]) {
           const ingredient = ingredients.find((ing) => ing._id === item);
+
           if (ingredient) {
             acc[item] = {
               ...ingredient,
@@ -57,7 +72,15 @@ export const OrderInfo = (): React.JSX.Element => {
     };
   }, [orderData, ingredients]);
 
-  if (!orderInfo) {
+  if (isInvalidNumber) {
+    return <p className="text text_type_main-medium">Некорректный номер заказа</p>;
+  }
+
+  if (error) {
+    return <p className="text text_type_main-medium">{error}</p>;
+  }
+
+  if (isLoading || !orderInfo) {
     return <Preloader />;
   }
 
