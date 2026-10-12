@@ -1,15 +1,16 @@
+import { updateUser, clearUserError } from '@slices/userSlice';
+import { ProfileUI } from '@ui-pages';
 import { type SyntheticEvent, useEffect, useState } from 'react';
 
-import { ProfileUI } from '@ui-pages';
+import { selectUser, selectUserError } from '@services/selectors';
 import { useDispatch, useSelector } from '@services/store';
-import { updateUser, clearUserError } from '@slices/userSlice';
 
 import type { TRegisterData } from '@api';
 
 export const Profile = (): React.JSX.Element => {
-  const user = useSelector((state) => state.user.user);
+  const user = useSelector(selectUser);
 
-  const updateUserError = useSelector((state) => state.user.error);
+  const updateUserError = useSelector(selectUserError);
 
   const dispatch = useDispatch();
 

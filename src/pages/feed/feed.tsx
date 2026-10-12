@@ -1,19 +1,23 @@
-import { useEffect } from 'react';
-
+import { getFeeds } from '@slices/feedSlice';
 import { Preloader } from '@ui';
 import { FeedUI } from '@ui-pages';
+import { useEffect } from 'react';
 
+import {
+  selectFeedError,
+  selectFeedLoading,
+  selectFeedOrders,
+} from '@services/selectors';
 import { useDispatch, useSelector } from '@services/store';
-import { getFeeds } from '@slices/feedSlice';
 
 export const Feed = (): React.JSX.Element => {
   const dispatch = useDispatch();
 
-  const orders = useSelector((state) => state.feed.orders);
+  const orders = useSelector(selectFeedOrders);
 
-  const isLoading = useSelector((state) => state.feed.isLoading);
+  const isLoading = useSelector(selectFeedLoading);
 
-  const error = useSelector((state) => state.feed.error);
+  const error = useSelector(selectFeedError);
 
   useEffect(() => {
     dispatch(getFeeds());

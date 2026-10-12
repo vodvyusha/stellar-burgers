@@ -1,9 +1,15 @@
+import { getOrderByNumber } from '@slices/orderInfoSlice';
 import { Preloader, OrderInfoUI } from '@ui';
 import { useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 
+import {
+  selectIngredients,
+  selectOrderInfo,
+  selectOrderInfoError,
+  selectOrderInfoLoading,
+} from '@services/selectors';
 import { useDispatch, useSelector } from '@services/store';
-import { getOrderByNumber } from '@slices/orderInfoSlice';
 
 import type { TIngredient } from '@utils-types';
 
@@ -12,13 +18,13 @@ export const OrderInfo = (): React.JSX.Element => {
 
   const { number } = useParams();
 
-  const orderData = useSelector((state) => state.orderInfo.order);
+  const orderData = useSelector(selectOrderInfo);
 
-  const isLoading = useSelector((state) => state.orderInfo.isLoading);
+  const isLoading = useSelector(selectOrderInfoLoading);
 
-  const error = useSelector((state) => state.orderInfo.error);
+  const error = useSelector(selectOrderInfoError);
 
-  const ingredients = useSelector((state) => state.ingredients.ingredients);
+  const ingredients = useSelector(selectIngredients);
 
   const orderNumber = Number(number);
 

@@ -1,12 +1,3 @@
-import { useEffect } from 'react';
-
-import { useDispatch, useSelector } from '@services/store';
-import { getIngredients } from '@slices/ingredientsSlice';
-import { getCookie } from '@utils/cookie';
-import { getUser, setAuthChecked } from '@slices/userSlice';
-
-import { ProtectedRoute } from '../protected-route';
-
 import { AppHeader } from '@components';
 import {
   ConstructorPage,
@@ -19,15 +10,27 @@ import {
   ProfileOrders,
   NotFound404,
 } from '@pages';
-
-import { Modal } from '../modal';
-import { OrderInfo } from '../order-info';
-import { IngredientDetails } from '../ingredient-details';
-
+import { getIngredients } from '@slices/ingredientsSlice';
+import { getUser, setAuthChecked } from '@slices/userSlice';
 import { Preloader } from '@ui';
+import { useEffect } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 
+import {
+  selectIngredients,
+  selectIngredientsError,
+  selectIngredientsLoading,
+} from '@services/selectors';
+import { useDispatch, useSelector } from '@services/store';
+import { getCookie } from '@utils/cookie';
+
+import { IngredientDetails } from '../ingredient-details';
+import { Modal } from '../modal';
+import { OrderInfo } from '../order-info';
+import { ProtectedRoute } from '../protected-route';
+
 import type { AppContentProps } from './type';
+
 import '../../index.css';
 
 import styles from './app.module.css';
@@ -35,11 +38,11 @@ import styles from './app.module.css';
 const App = (): React.JSX.Element => {
   const dispatch = useDispatch();
 
-  const ingredients = useSelector((state) => state.ingredients.ingredients);
+  const ingredients = useSelector(selectIngredients);
 
-  const isIngredientsLoading = useSelector((state) => state.ingredients.isLoading);
+  const isIngredientsLoading = useSelector(selectIngredientsLoading);
 
-  const ingredientsError = useSelector((state) => state.ingredients.error);
+  const ingredientsError = useSelector(selectIngredientsError);
 
   useEffect(() => {
     dispatch(getIngredients());

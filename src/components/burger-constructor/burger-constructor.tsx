@@ -1,13 +1,17 @@
+import { clearConstructor } from '@slices/constructorSlice';
+import { createOrder, resetOrder } from '@slices/orderSlice';
+import { BurgerConstructorUI } from '@ui';
 import { useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import { BurgerConstructorUI } from '@ui';
-
+import {
+  selectConstructorItems,
+  selectOrderError,
+  selectOrderModalData,
+  selectOrderRequest,
+  selectUser,
+} from '@services/selectors';
 import { useDispatch, useSelector } from '@services/store';
-
-import { createOrder, resetOrder } from '@slices/orderSlice';
-
-import { clearConstructor } from '@slices/constructorSlice';
 
 import type { TConstructorIngredient } from '@utils-types';
 
@@ -17,11 +21,11 @@ export const BurgerConstructor = (): React.JSX.Element | null => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const constructorItems = useSelector((state) => state.burgerConstructor);
-  const orderRequest = useSelector((state) => state.order.orderRequest);
-  const orderModalData = useSelector((state) => state.order.orderModalData);
-  const orderError = useSelector((state) => state.order.error);
-  const user = useSelector((state) => state.user.user);
+  const constructorItems = useSelector(selectConstructorItems);
+  const orderRequest = useSelector(selectOrderRequest);
+  const orderModalData = useSelector(selectOrderModalData);
+  const orderError = useSelector(selectOrderError);
+  const user = useSelector(selectUser);
 
   const onOrderClick = async (): Promise<void> => {
     if (!constructorItems.bun || orderRequest) return;

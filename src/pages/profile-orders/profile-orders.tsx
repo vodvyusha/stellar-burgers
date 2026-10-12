@@ -1,19 +1,23 @@
+import { getOrders } from '@slices/ordersSlice';
+import { Preloader } from '@ui';
+import { ProfileOrdersUI } from '@ui-pages';
 import { useEffect } from 'react';
 
-import { ProfileOrdersUI } from '@ui-pages';
-import { Preloader } from '@ui';
-
+import {
+  selectProfileOrders,
+  selectProfileOrdersError,
+  selectProfileOrdersLoading,
+} from '@services/selectors';
 import { useDispatch, useSelector } from '@services/store';
-import { getOrders } from '@slices/ordersSlice';
 
 export const ProfileOrders = (): React.JSX.Element => {
   const dispatch = useDispatch();
 
-  const orders = useSelector((state) => state.orders.orders);
+  const orders = useSelector(selectProfileOrders);
 
-  const isLoading = useSelector((state) => state.orders.isLoading);
+  const isLoading = useSelector(selectProfileOrdersLoading);
 
-  const error = useSelector((state) => state.orders.error);
+  const error = useSelector(selectProfileOrdersError);
 
   useEffect(() => {
     dispatch(getOrders());

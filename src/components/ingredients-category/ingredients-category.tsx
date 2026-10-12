@@ -1,5 +1,7 @@
 import { IngredientsCategoryUI } from '@ui';
 import { useMemo } from 'react';
+
+import { selectConstructorItems } from '@services/selectors';
 import { useSelector } from '@services/store';
 
 import type { TIngredientsCategoryProps } from './type';
@@ -11,7 +13,7 @@ export const IngredientsCategory = ({
   ingredients,
   ref,
 }: TIngredientsCategoryProps): React.JSX.Element => {
-  const burgerConstructor = useSelector((state) => state.burgerConstructor);
+  const burgerConstructor = useSelector(selectConstructorItems);
 
   const ingredientsCounters = useMemo(() => {
     const { bun, ingredients: constructorIngredients } = burgerConstructor;

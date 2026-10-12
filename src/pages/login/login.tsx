@@ -1,9 +1,10 @@
+import { clearUserError, loginUser } from '@slices/userSlice';
+import { LoginUI } from '@ui-pages';
 import { type SyntheticEvent, useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
-import { LoginUI } from '@ui-pages';
+import { selectUserError } from '@services/selectors';
 import { useDispatch, useSelector } from '@services/store';
-import { clearUserError, loginUser } from '@slices/userSlice';
 
 export const Login = (): React.JSX.Element => {
   const [email, setEmail] = useState('');
@@ -14,7 +15,7 @@ export const Login = (): React.JSX.Element => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const error = useSelector((state) => state.user.error);
+  const error = useSelector(selectUserError);
 
   const from = location.state?.from?.pathname || '/';
 

@@ -1,9 +1,10 @@
+import { registerUser, clearUserError } from '@slices/userSlice';
+import { RegisterUI } from '@ui-pages';
 import { type SyntheticEvent, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { RegisterUI } from '@ui-pages';
+import { selectUserError } from '@services/selectors';
 import { useDispatch, useSelector } from '@services/store';
-import { registerUser, clearUserError } from '@slices/userSlice';
 
 export const Register = (): React.JSX.Element => {
   const [userName, setUserName] = useState('');
@@ -13,7 +14,7 @@ export const Register = (): React.JSX.Element => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const error = useSelector((state) => state.user.error);
+  const error = useSelector(selectUserError);
 
   useEffect(() => {
     dispatch(clearUserError());
