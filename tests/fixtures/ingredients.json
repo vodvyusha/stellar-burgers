@@ -1,0 +1,31 @@
+{
+  "success": true,
+  "data": [
+    {
+      "_id": "test-bun-1",
+      "name": "Тестовая булочка",
+      "type": "bun",
+      "proteins": 10,
+      "fat": 5,
+      "carbohydrates": 30,
+      "calories": 200,
+      "price": 500,
+      "image": "",
+      "image_large": "",
+      "image_mobile": ""
+    },
+    {
+      "_id": "test-main-1",
+      "name": "Тестовая котлета",
+      "type": "main",
+      "proteins": 20,
+      "fat": 15,
+      "carbohydrates": 5,
+      "calories": 250,
+      "price": 300,
+      "image": "",
+      "image_large": "",
+      "image_mobile": ""
+    }
+  ]
+}
