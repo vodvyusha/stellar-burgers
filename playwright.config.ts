@@ -77,7 +77,7 @@ export default defineConfig({
     url: 'http://localhost:4000',
     reuseExistingServer: !process.env.CI,
     env: {
-      BURGER_API_URL: 'https://norma.ffapi.ru/api'
-    }
-  }
+      BURGER_API_URL: 'https://norma.ffapi.ru/api',
+    },
+  },
 });

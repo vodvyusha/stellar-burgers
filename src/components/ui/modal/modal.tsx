@@ -13,7 +13,12 @@ export const ModalUI = memo(function ModalUI({
 }: TModalUIProps): React.JSX.Element {
   return (
     <>
-      <div className={styles.modal}>
+      <div
+        className={styles.modal}
+        role="dialog"
+        aria-modal="true"
+        aria-label={title || 'Информация о заказе'}
+      >
         <div className={styles.header}>
           <h3 className="text text_type_main-large">{title}</h3>
           <button

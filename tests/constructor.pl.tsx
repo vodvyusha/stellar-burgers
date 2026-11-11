@@ -1,11 +1,11 @@
 import { test, expect } from '@playwright/test';
-import userMock from './fixtures/user.json' with { type: 'json' };
-import orderMock from './fixtures/order.json' with { type: 'json' };
+import { readFileSync } from 'node:fs';
 
 test.beforeEach(async ({ page }) => {
-  await page.routeFromHAR('tests/fixtures/ingredients.har', {
-    url: '**/api/ingredients',
+  await page.routeFromHAR('tests/fixtures/api.har', {
+    url: '**/api/**',
     update: false,
+    notFound: 'abort',
   });
 
   await page.goto('/');
@@ -60,75 +60,85 @@ test.describe('Тестирование конструктора бургера'
 });
 
 test.describe('Тестирование модального окна', () => {
-  test('Открытие модального окна ингредиента', async ({ page }) => {
-    await page
-      .getByText('Краторная булка N-200i', {
-        exact: true,
-      })
-      .click();
-
-    await expect(
-      page.getByRole('heading', { name: 'Детали ингредиента' })
-    ).toBeVisible();
-
-    await expect(
-      page.getByRole('heading', { name: 'Краторная булка N-200i' })
-    ).toBeVisible();
-  });
-
-  test('Закрытие модального окна ингредиента по клику на крестик', async ({ page }) => {
-    await page
-      .getByText('Краторная булка N-200i', {
-        exact: true,
-      })
-      .click();
-
-    const modalTitle = page.getByRole('heading', {
+  test('Отображение данных выбранных ингредиентов', async ({ page }) => {
+    const modal = page.getByRole('dialog', {
       name: 'Детали ингредиента',
     });
 
-    await expect(modalTitle).toBeVisible();
+    const bun = page.getByRole('listitem').filter({ hasText: 'Краторная булка N-200i' });
 
-    await page.getByRole('button', { name: 'Закрыть' }).click();
+    await bun.getByRole('link').click();
 
-    await expect(modalTitle).not.toBeVisible();
+    await expect(modal).toBeVisible();
+
+    await expect(
+      modal.getByRole('heading', { name: 'Краторная булка N-200i' })
+    ).toBeVisible();
+
+    const calories = modal.getByRole('listitem').filter({ hasText: 'Калории, ккал' });
+
+    await expect(calories.getByText('420', { exact: true })).toBeVisible();
+
+    await modal.getByRole('button', { name: 'Закрыть' }).click();
+
+    await expect(modal).not.toBeVisible();
+
+    const sauce = page
+      .getByRole('listitem')
+      .filter({ hasText: 'Соус фирменный Space Sauce' });
+
+    await sauce.getByRole('link').click();
+
+    await expect(modal).toBeVisible();
+
+    await expect(
+      modal.getByRole('heading', { name: 'Соус фирменный Space Sauce' })
+    ).toBeVisible();
+
+    await expect(calories.getByText('14', { exact: true })).toBeVisible();
+
+    await expect(
+      modal.getByRole('heading', { name: 'Краторная булка N-200i' })
+    ).toHaveCount(0);
+  });
+
+  test('Закрытие модального окна по клику на крестик', async ({ page }) => {
+    const bun = page.getByRole('listitem').filter({ hasText: 'Краторная булка N-200i' });
+
+    await bun.getByRole('link').click();
+
+    const modal = page.getByRole('dialog', {
+      name: 'Детали ингредиента',
+    });
+
+    await expect(modal).toBeVisible();
+
+    await modal.getByRole('button', { name: 'Закрыть' }).click();
+
+    await expect(modal).not.toBeVisible();
     await expect(page).toHaveURL('http://localhost:4000/');
   });
 
-  test('Закрытие модального окна ингредиента по клику на оверлей', async ({ page }) => {
-    await page
-      .getByText('Краторная булка N-200i', {
-        exact: true,
-      })
-      .click();
+  test('Закрытие модального окна по клику на оверлей', async ({ page }) => {
+    const bun = page.getByRole('listitem').filter({ hasText: 'Краторная булка N-200i' });
 
-    const modalTitle = page.getByRole('heading', {
+    await bun.getByRole('link').click();
+
+    const modal = page.getByRole('dialog', {
       name: 'Детали ингредиента',
     });
 
-    await expect(modalTitle).toBeVisible();
+    await expect(modal).toBeVisible();
 
     await page.getByTestId('modal-overlay').click({ position: { x: 10, y: 10 } });
 
-    await expect(modalTitle).not.toBeVisible();
+    await expect(modal).not.toBeVisible();
     await expect(page).toHaveURL('http://localhost:4000/');
   });
 });
 
 test.describe('Тестирование оформления заказа', () => {
   test('Успешное оформление заказа', async ({ page }) => {
-    await page.route('**/api/auth/user', async (route) => {
-      await route.fulfill({ json: userMock });
-    });
-
-    await page.route('**/api/orders', async (route) => {
-      if (route.request().method() === 'POST') {
-        await route.fulfill({ json: orderMock });
-      } else {
-        await route.continue();
-      }
-    });
-
     await page.context().addCookies([
       {
         name: 'accessToken',
@@ -142,6 +152,21 @@ test.describe('Тестирование оформления заказа', () =
     });
 
     await page.reload();
+
+    const har = JSON.parse(readFileSync('tests/fixtures/api.har', 'utf8'));
+
+    const orderEntry = har.log.entries.find(
+      (entry: { request: { method: string; url: string } }) =>
+        entry.request.method === 'POST' && entry.request.url.endsWith('/api/orders')
+    );
+
+    if (!orderEntry?.response?.content?.text) {
+      throw new Error('В HAR не найден ответ на создание заказа');
+    }
+
+    const orderResponse = JSON.parse(orderEntry.response.content.text);
+
+    const expectedOrderNumber = String(orderResponse.order.number);
 
     const bun = page.getByRole('listitem').filter({ hasText: 'Краторная булка N-200i' });
 
@@ -165,14 +190,27 @@ test.describe('Тестирование оформления заказа', () =
 
     await page.getByRole('button', { name: 'Оформить заказ' }).click();
 
-    await expect(page.getByRole('heading', { name: '12345' })).toBeVisible();
+    const orderModal = page.getByRole('dialog', {
+      name: 'Информация о заказе',
+    });
+
+    await expect(orderModal).toBeVisible();
+
+    await expect(
+      orderModal.getByRole('heading', {
+        name: expectedOrderNumber,
+        exact: true,
+      })
+    ).toBeVisible();
+
+    await expect(orderModal.getByText('идентификатор заказа')).toBeVisible();
 
     await expect(page.getByText('Выберите булки')).toHaveCount(2);
 
     await expect(page.getByText('Выберите начинку')).toBeVisible();
 
-    await page.getByRole('button', { name: 'Закрыть' }).click();
+    await orderModal.getByRole('button', { name: 'Закрыть' }).click();
 
-    await expect(page.getByText('идентификатор заказа')).not.toBeVisible();
+    await expect(orderModal).not.toBeVisible();
   });
 });

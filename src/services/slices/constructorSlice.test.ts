@@ -73,7 +73,12 @@ describe('Проверка работы конструктора', () => {
     const action = addIngredient(mockBun);
     const result = constructorReducer(state, action);
 
-    expect(result.bun).toEqual(action.payload);
+    expect(result.bun).toEqual({
+      ...mockBun,
+      id: expect.any(String),
+    });
+
+    expect(result.bun?.id?.trim()).not.toBe('');
     expect(result.ingredients).toEqual([]);
   });
 
@@ -88,7 +93,16 @@ describe('Проверка работы конструктора', () => {
 
     expect(result.ingredients).toHaveLength(state.ingredients.length + 1);
 
-    expect(result.ingredients).toEqual([state.ingredients[0], action.payload]);
+    expect(result.ingredients).toEqual([
+      state.ingredients[0],
+      {
+        ...mockMain,
+        id: expect.any(String),
+      },
+    ]);
+
+    expect(result.ingredients[1].id.trim()).not.toBe('');
+    expect(result.bun).toBeNull();
   });
 
   test('Добавление новой булочки заменяет предыдущую', () => {
@@ -100,8 +114,13 @@ describe('Проверка работы конструктора', () => {
     const action = addIngredient(mockAnotherBun);
     const result = constructorReducer(state, action);
 
-    expect(result.bun).toEqual(action.payload);
-    expect(result.bun?._id).not.toBe(mockBun._id);
+    expect(result.bun).toEqual({
+      ...mockAnotherBun,
+      id: expect.any(String),
+    });
+
+    expect(result.bun?.id?.trim()).not.toBe('');
+    expect(result.bun?.id).not.toBe('old-bun-id');
   });
 
   test('Удаление начинки по id', () => {
@@ -167,5 +186,36 @@ describe('Проверка работы конструктора', () => {
 
     expect(result.ingredients).toEqual([]);
     expect(result.bun).toBeNull();
+  });
+  test('Одинаковые начинки получают разные локальные id', () => {
+    const state: TConstructorState = {
+      bun: null,
+      ingredients: [],
+    };
+
+    const firstResult = constructorReducer(state, addIngredient(mockMain));
+
+    const secondResult = constructorReducer(firstResult, addIngredient(mockMain));
+
+    expect(secondResult.ingredients).toHaveLength(2);
+
+    expect(secondResult.ingredients).toEqual([
+      {
+        ...mockMain,
+        id: expect.any(String),
+      },
+      {
+        ...mockMain,
+        id: expect.any(String),
+      },
+    ]);
+
+    const firstId = secondResult.ingredients[0].id;
+    const secondId = secondResult.ingredients[1].id;
+
+    expect(firstId.trim()).not.toBe('');
+    expect(secondId.trim()).not.toBe('');
+
+    expect(firstId).not.toBe(secondId);
   });
 });
